@@ -1,0 +1,41 @@
+---
+ddns:
+  storage:
+     sqlite:
+      db: /var/simple-ddns.db
+  public-ip-api:
+     ipify:
+      check-period-mins: 1
+      ipv4:
+        endpoint: https://api.ipify.org
+      ipv6:
+        endpoint: https://api6.ipify.org
+  dns-server:
+    aws:
+      - account: main
+        credentials-file: "/usr/local/etc/simple-ddns/aws/credentials"
+        records:
+          - fqdn: vpn.home.com.
+            type: A
+            zone-id: "000000000000000000000"
+          - fqdn: jenkins.home.com.
+            type: A
+            zone-id: "111111111111111111111"
+      - account: secondary
+        credentials-file: "/usr/local/etc/simple-ddns/aws/credentials"
+        records:
+          - fqdn: vpn.home.com.
+            type: A
+            zone-id: "000000000000000000000"
+          - fqdn: jenkins.home.com.
+            type: A
+            zone-id: "111111111111111111111"              
+    digital-ocean:
+      - account: main
+        api-key: "API-KEY"
+        records:
+          - fqdn: vpn.jorgesanchez-e.dev.
+            type: A
+          - fqdn: jenkins.jorgesanchez-e.dev.
+            api-key: "API-KEY-ACCOUNT-2"
+            type: A
