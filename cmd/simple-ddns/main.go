@@ -1,7 +1,17 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+
+	"github.com/jorgesanchez-e/simple-ddns/internal/config"
+)
 
 func main() {
-	fmt.Printf("hello world\n")
+	config, err := config.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(config)
 }
