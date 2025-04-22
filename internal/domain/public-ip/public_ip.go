@@ -8,5 +8,5 @@ type IP struct {
 }
 
 type Getter interface {
-	GetIp(context.Context) IP
+	GetIP(context.Context) IP
 }

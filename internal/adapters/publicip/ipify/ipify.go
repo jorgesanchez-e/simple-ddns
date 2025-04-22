@@ -50,7 +50,7 @@ type ipifyGetter struct {
 	logger messageLogger
 }
 
-func New(config configDecoder, logger messageLogger) (*ipifyGetter, error) {
+func New(config configDecoder, logger messageLogger) (publicip.Getter, error) {
 	cnf := ipifyConfig{}
 	err := config.Decode(configNode, &cnf)
 	if err != nil {
