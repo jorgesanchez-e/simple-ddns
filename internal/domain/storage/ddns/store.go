@@ -8,6 +8,6 @@ import (
 
 type Controller interface {
 	UpdateRecord(context.Context, dns.DomainRecord) error
-	GetRecords(context.Context) []dns.DomainRecord
+	GetRecords(context.Context) ([]dns.DomainRecord, error)
 	InitRecords(context.Context, []dns.DomainRecord) error
 }
