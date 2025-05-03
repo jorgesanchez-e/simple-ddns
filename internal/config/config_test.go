@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 
 	"path/filepath"
@@ -110,7 +111,7 @@ func createFS(t *testing.T, file, content string) afero.Fs {
 
 func TestDecode(t *testing.T) {
 	var (
-		expectedStringResult    string            = "/var/simple-ddns.db"
+		expectedStringResult    string            = "/var/simple-ddns.db\n"
 		expectedIntResult       int               = 1
 		expectedFloat32Result   float32           = 1.0
 		expectedFloat64Result   float64           = 2.0
@@ -125,7 +126,6 @@ func TestDecode(t *testing.T) {
 		expectedResult any
 		expectedError  error
 	}{
-
 		{
 			name:           "normal-string-test",
 			file:           fileOk,
@@ -181,7 +181,10 @@ func TestDecode(t *testing.T) {
 			contentFs:  createFS(t, fileOk, content[fileOk]),
 			expectedResult: &publicIpConfig{
 				IPify: ipify{
-					CheckPeriodMins: 1,
+					CheckPeriodMins:      1,
+					ParseFloat32:         1,
+					ParseFloat64:         2,
+					ParseNoSupportedType: "some-value",
 					IPV4: ipv4{
 						Endpoint: "https://api.ipify.org",
 					},
@@ -208,16 +211,15 @@ func TestDecode(t *testing.T) {
 			err := cnf.read(file)
 			assert.NoError(t, err)
 
-			decoded := newTestVariable(t, expectedResult)
-			err = cnf.Decode(node, &decoded)
+			toDecode := newTestVariable(t, expectedResult)
+			err = cnf.Decode(node, toDecode)
 
 			if err != nil {
 				assert.Equal(t, expectedError, err)
 			} else {
-				assert.IsType(t, expectedResult, decoded)
+				assert.IsType(t, expectedResult, toDecode)
+				assert.EqualValues(t, dereferenceValues(t, expectedResult), dereferenceValues(t, toDecode))
 			}
-
-			// TODO: Compare values, solve the problem for Ptr to interfaces{}
 		})
 	}
 }
@@ -270,6 +272,33 @@ func newTestVariable(t *testing.T, vType any) any {
 	default:
 		return nil
 	}
+}
+
+func dereferenceValues(t *testing.T, value any) any {
+	t.Helper()
+
+	if v := reflect.ValueOf(value); v.Kind() == reflect.Ptr {
+		switch v := v.Elem().Interface().(type) {
+		case string:
+			return v
+		case int:
+			return v
+		case float32:
+			return v
+		case float64:
+			return v
+		case struct{}:
+			return v
+		case map[string]any:
+			return v
+		case any:
+			return v
+		default:
+			return nil
+		}
+	}
+
+	return nil
 }
 
 func TestParseArguments(t *testing.T) {

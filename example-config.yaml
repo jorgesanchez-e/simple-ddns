@@ -14,22 +14,34 @@ ddns:
     aws:
       - account: main
         credentials-file: "/usr/local/etc/simple-ddns/aws/credentials"
-        records:
-          - fqdn: vpn.home.com.
-            type: A
-            zone-id: "000000000000000000000"
-          - fqdn: jenkins.home.com.
-            type: A
-            zone-id: "111111111111111111111"
+        zones: 
+          - id: "111111111111111111111"
+            records:
+              - fqdn: vpn.home.com.
+                type: A
+              - fqdn: jenkins.home.com.
+                type: A
+          - id: "222222222222222222222"
+            records:
+              - fqdn: vpn6.home.com.
+                type: AAAA
+              - fqdn: jenkins6.home.com.
+                type: AAAA
       - account: secondary
-        credentials-file: "/usr/local/etc/simple-ddns/aws/credentials"
-        records:
-          - fqdn: vpn.home.com.
-            type: A
-            zone-id: "000000000000000000000"
-          - fqdn: jenkins.home.com.
-            type: A
-            zone-id: "111111111111111111111"              
+        credentials-file: "/usr/local/etc/simple-ddns/aws/credentials-seconday"
+        zones: 
+          - id: "111111111111111111111"
+            records:
+              - fqdn: secondary.vpn.home.com.
+                type: A
+              - fqdn: secondary.jenkins.home.com.
+                type: A
+          - id: "222222222222222222222"
+            records:
+              - fqdn: secondary6.vpn.home.com.
+                type: AAAA
+              - fqdn: seconday6.jenkins.home.com.
+                type: AAAA
     digital-ocean:
       - account: main
         api-key: "API-KEY"

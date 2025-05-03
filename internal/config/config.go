@@ -69,41 +69,37 @@ func (c *config) Decode(node string, item any) error {
 		return fmt.Errorf("node %s not found", node)
 	}
 
-	var iRef *any
-	var is bool
-	if iRef, is = item.(*any); !is || iRef == nil {
-		return fmt.Errorf("item is not a reference")
-	}
-
-	switch v := (*iRef).(type) {
-	case *string:
-		*v = string(bytes)
-		item = *v
-	case *int:
-		if *v, err = strconv.Atoi(strings.TrimSpace(string(bytes))); err != nil {
-			return fmt.Errorf("unable to decode int value, err:%w", err)
-		}
-		item = *v
-	case *float32:
-		var n float64 = 0
-		if n, err = strconv.ParseFloat(strings.TrimSpace(string(bytes)), 32); err != nil {
-			return fmt.Errorf("unable to decode float32 value, err:%w", err)
-		}
-		item = n
-	case *float64:
-		if *v, err = strconv.ParseFloat(strings.TrimSpace(string(bytes)), 64); err != nil {
-			return fmt.Errorf("unable to decode float64 value, err:%w", err)
-		}
-		item = *v
-	default:
-		if reflect.TypeOf(*iRef).Kind() == reflect.Ptr && reflect.TypeOf(*iRef).Elem().Kind() == reflect.Struct {
-			if err := yaml.Unmarshal(bytes, v); err != nil {
-				return fmt.Errorf("unable to decode struct, err:%w", err)
+	if v := reflect.ValueOf(item); v.Kind() == reflect.Ptr {
+		switch v = v.Elem(); v.Kind() {
+		case reflect.Slice, reflect.Struct, reflect.Map:
+			if err = yaml.Unmarshal(bytes, item); err != nil {
+				return err
 			}
-			item = &v
-		} else {
-			return fmt.Errorf("type %T no supported", v)
+		case reflect.String:
+			v.SetString(string(bytes))
+		case reflect.Int:
+			var value int = 0
+			if value, err = strconv.Atoi(strings.TrimSpace(string(bytes))); err != nil {
+				return fmt.Errorf("unable to decode int value, err:%w", err)
+			}
+			v.SetInt(int64(value))
+		case reflect.Float32:
+			var n float64 = 0
+			if n, err = strconv.ParseFloat(strings.TrimSpace(string(bytes)), 32); err != nil {
+				return fmt.Errorf("unable to decode float32 value, err:%w", err)
+			}
+			v.SetFloat(n)
+		case reflect.Float64:
+			var n float64 = 0
+			if n, err = strconv.ParseFloat(strings.TrimSpace(string(bytes)), 64); err != nil {
+				return fmt.Errorf("unable to decode float64 value, err:%w", err)
+			}
+			v.SetFloat(n)
+		default:
+			return fmt.Errorf("type %T no supported", item)
 		}
+	} else {
+		return fmt.Errorf("item is not a pointer")
 	}
 
 	return nil
